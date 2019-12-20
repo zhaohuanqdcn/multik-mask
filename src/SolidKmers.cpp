@@ -52,7 +52,7 @@ bool SolidKmers::load(const std::string infile) {
     if (sdsl::load_from_file(_bv, infile)) {
         //_num_Solid_kmers = sdsl::sd_vector<>::rank_1_type(&_bv)(_bv.size());
         _num_Solid_kmers = sdsl::bit_vector::rank_1_type(&_bv)(_bv.size());
-        assert(_bv.size() == ((1ULL<<(2*_k))-1ULL));
+        assert(_bv.size() == ((1ULL<<(2*_k))));
         return true;
     }
     else {
