@@ -1,7 +1,9 @@
-# Suk: Solid (Unique) Kmers Module
+# Multi-k Error Masking
 =======================================================
 
-Module for finding Solid (Unique) Kmers from genomic reads-data. 
+This repository presents a multi-k error masking tool for high coverage long reads.
+
+The framework is updated from SUK (https://github.com/Ritu-Kundu/suk).
 
 ## Dependencies
 - Either Mac OS X or Linux are currently supported.
