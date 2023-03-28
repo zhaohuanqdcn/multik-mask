@@ -111,8 +111,8 @@ bool SolidKmers::initialise(const std::vector<std::string> & filenames, const UI
         sprintf(karg, "-k%d", _k);
         sprintf(marg, "-m%d", max_memory);
         sprintf(targ, "-t%d", threads);
-        sprintf(csarg, "-cs%d", coverage*4);
-        sprintf(cxarg, "-cx%d", coverage*4);
+        sprintf(csarg, "-cs%d", 1000);
+        sprintf(cxarg, "-cx%d", 1000);
         sprintf(ciarg, "-ci%d", 2);
         //std::cout << "KMC args:" << karg << " " << marg << " " << targ << " " << csarg << " " << file_type.c_str() << " " << filename.c_str() << " " << kmc_output_path.c_str() << " " << tmp_kmc_directory.c_str() << std::endl;
         execlp("kmc", "kmc", karg, marg, targ, csarg, cxarg, ciarg, file_type.c_str(), kmc_inputs_path.c_str(), kmc_output_path.c_str(), tmp_kmc_directory.c_str(), (char *)NULL);
@@ -124,9 +124,15 @@ bool SolidKmers::initialise(const std::vector<std::string> & filenames, const UI
         return false;
     }
     monitor.stop("[SUK:KMC]: Running KMC done. ");
-    
+    /*
+    bool result = true;
+    slog::Monitor monitor;
+    std::string kmc_output_path = tmp_directory + "/kmc_result.res";
+    std::string tmp_kmc_directory = tmp_directory + "/kmc_tmp";
+    std::string kmc_inputs_path = "@" + tmp_directory + "/inputs.txt";
+    */
     monitor.start();
-    const UINT cHIST_FREQ = (coverage*4U);
+    const UINT cHIST_FREQ = 1000;
     CKMCFile kmc_database;
     if(!kmc_database.OpenForListing(kmc_output_path)) {
         fprintf(stderr, "Failed to open KMC database.\n");
@@ -146,11 +152,17 @@ bool SolidKmers::initialise(const std::vector<std::string> & filenames, const UI
     //UINT64 counter;
     uint64 counter;
     while (kmc_database.ReadNextKmer(*kmer_object, counter)) {
-        if(counter <= cHIST_FREQ) histArray[counter]++;
+   	    if (!exclude_hp || (kmer_object->get_num_symbol(0) != kmer_object->get_num_symbol(1)
+		         && kmer_object->get_num_symbol(_k-1) != kmer_object->get_num_symbol(_k-2)))
+	        if(counter <= cHIST_FREQ) histArray[counter]++;
     }
+    std::ofstream histogram("kmc_hist.txt");
+    for (int i : histArray)
+        histogram << i << std::endl;
+    histogram.close();
     monitor.stop("[SUK:KMC]: Kmers Histogram done. ");     
     
-    /* Find cut offs */
+    /* Find cut offs
     //monitor.start();
     CutOffs coffs = find_cutoffs(histArray);
     //monitor.stop("[SUK]: Finding cutoffs. ");
@@ -194,15 +206,16 @@ bool SolidKmers::initialise(const std::vector<std::string> & filenames, const UI
     kmc_inputs_path = kmc_inputs_path.substr(1);
     std::string kmc_output_path_pre = kmc_output_path + ".kmc_pre";
     std::string kmc_output_path_suf = kmc_output_path + ".kmc_suf";
-    unlink(kmc_inputs_path.c_str());
+    //unlink(kmc_inputs_path.c_str());
     //unlink(kmc_output_path_pre.c_str());
     //unlink(kmc_output_path_suf.c_str());
-    rmdir(tmp_kmc_directory.c_str());
+    //rmdir(tmp_kmc_directory.c_str());
     //monitor.stop("[SUK]: Clearing files. ");
 
     
     fprintf(stdout, "[SolidKmers] Info: Number of solid kmers found: %lu\n",sdsl::bit_vector::rank_1_type(&_bv)(_bv.size())); 
     monitor.total("[SolidKmers]: Overall. ");
+    */
     return result;
 }
 

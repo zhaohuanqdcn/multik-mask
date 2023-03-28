@@ -33,6 +33,9 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build all libraries as shared")
 set(LIBSOURCES 
     ${PROJECT_SOURCE_DIR}/include/suk/SolidKmers.hpp
     ${PROJECT_SOURCE_DIR}/src/SolidKmers.cpp
+    ${PROJECT_SOURCE_DIR}/src/FindSolidKmers.cpp
+    ${PROJECT_SOURCE_DIR}/src/FindErrorKmers.cpp
+    ${PROJECT_SOURCE_DIR}/src/KmerHistCount.cpp
 )
 
 # Check Dependencies
@@ -78,9 +81,24 @@ if (suk_build_executable)
         ${PROJECT_SOURCE_DIR}/src/main.cpp
     )
     add_executable(suk_bin ${BINSOURCES})
+    set(COUNTSOURCES
+        ${PROJECT_SOURCE_DIR}/src/KmerHistCount.cpp
+    )
+    add_executable(suk_cnt ${COUNTSOURCES})
+    set(ERRORSOURCES
+        ${PROJECT_SOURCE_DIR}/src/FindErrorKmers.cpp
+    )
+    add_executable(suk_err ${ERRORSOURCES})
+    set(SOLIDSOURCES
+        ${PROJECT_SOURCE_DIR}/src/FindSolidKmers.cpp
+    )
+    add_executable(suk_kmer ${SOLIDSOURCES})
 
     target_link_libraries(suk_bin suk)
     set_target_properties(suk_bin PROPERTIES OUTPUT_NAME suk)
+    target_link_libraries(suk_cnt suk)
+    target_link_libraries(suk_err suk)
+    target_link_libraries(suk_kmer suk)
 
     install(TARGETS suk_bin DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
