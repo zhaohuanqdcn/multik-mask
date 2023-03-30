@@ -41,6 +41,7 @@ void usage(void)
                " A list of files containing file names in each line can be passed with @ prefix.\n";
   std::cout << "  -k, --kmer-len <int> \t \t The length of the kmer (must be positive).\n";
   std::cout << " Optional args:\n";
+  std::cout << "  -f, --output-folder <str> \t Folder of the output. [DEAFULT: ./] \n ";
   std::cout << "  -o, --output-prefix <str> \t Prefix of the output filename. [DEAFULT: SUK_k<x> where x is the value of k] \n ";
   std::cout << " -t, --threads <int> \t \t Number of threads. [DEFAULT: 1] \n";
   std::cout << "  -d, --dump-txt \t \t Dumps (in addition to the bit-vector) the unique kmers into textfile (<prefix>.txt where prefix is the value of output-prefix)."
@@ -58,6 +59,7 @@ void usage(void)
 using InputFlags = struct SInputFlags{
     std::vector<std::string> read_filenames;
     std::string output_filename;
+    std::string output_folder;
     UINT32 threads;
     UINT16 k;
     UINT16 expected_coverage;
@@ -70,6 +72,7 @@ using InputFlags = struct SInputFlags{
 static struct option long_options[] = {
     {"input", required_argument, NULL, 'i'},
     {"kmer-len", required_argument, NULL, 'k'},
+    {"output-folder", required_argument, NULL, 'f'},
     {"output-prefix", required_argument, NULL, 'o'},
     {"threads", required_argument, NULL, 't'},
     {"dump-txt", no_argument, NULL, 'd'},
@@ -90,6 +93,7 @@ void decodeFlags(int argc, char *argv[], InputFlags &flags)
   int given_k = 0;
   std::string infile;
 
+  flags.output_folder = "./";
   flags.output_filename = "SUK";
   flags.threads = 1;
   flags.expected_coverage = 50;
@@ -101,7 +105,7 @@ void decodeFlags(int argc, char *argv[], InputFlags &flags)
   bool is_k = false;
 
   /* initialisation */
-  while ((opt = getopt_long(argc, argv, "i:k:o:t:dec:m:h", long_options,
+  while ((opt = getopt_long(argc, argv, "i:k:f:o:t:dec:m:h", long_options,
                             nullptr)) != -1)
   {
     switch (opt)
@@ -132,6 +136,10 @@ void decodeFlags(int argc, char *argv[], InputFlags &flags)
       args++;
       break;
 
+    case 'f':
+      flags.output_folder = std::string(optarg);
+      args++;
+      break;
     case 'o':
       flags.output_filename = std::string(optarg);
       args++;
@@ -183,7 +191,7 @@ int main(int argc, char **argv) {
   suk::decodeFlags(argc, argv, flags);
 
   suk::SolidKmers sk(flags.k);
-  sk.initialise(flags.read_filenames,flags.threads,flags.kmc_memory,flags.expected_coverage,flags.exclude_hp,"tmp/");
+  sk.initialise(flags.read_filenames,flags.threads,flags.kmc_memory,flags.expected_coverage,flags.exclude_hp,flags.output_folder+std::to_string(flags.k)+"mer/");
   sk.store(flags.output_filename+".bv");
 
   if (flags.dump_txt) {
