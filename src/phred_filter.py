@@ -76,7 +76,7 @@ queue = Queue()
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("use: python PhredFilter.py source_path dest_path")
+        print("use: python phred_filter.py source_path dest_path")
     # for i, arg in enumerate(sys.argv):
     #   print(f"Argument {i}: {arg}")
     src = sys.argv[1]
@@ -89,8 +89,6 @@ if __name__ == "__main__":
     print(f"initing threads...")
     writer = Thread(target=file_writer, args=(dst, queue), daemon=True)
     writer.start()
-    
-    # filter_file(1, src, 1e5, 1e8)
     
     threads = [Thread(
                     target=filter_file, \

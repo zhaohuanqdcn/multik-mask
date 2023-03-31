@@ -12,9 +12,9 @@ The framework is updated from [SUK](https://github.com/Ritu-Kundu/suk).
 
 - python >=2.7 and <3 (for BESST)
 
-- cmake 3.8+
+- cmake 3.10+
 
-- BESST
+- [BESST](https://github.com/ksahlin/BESST)
 
   ```
   python2 -m pip install --user BESST
@@ -65,7 +65,7 @@ The usage of subroutines is not recommended since they are not intended to be st
   python phred_filter.py src_path dest_path
   bin/suk_cnt k [path (default ./)]
   bin/suk_kmer k lower upper [path (default ./)]
-  python mask.py k filtered_path kmer_path 
+  python mask.py k kmer_path filtered_path dest_path
  ```
 **Notes:** 
 

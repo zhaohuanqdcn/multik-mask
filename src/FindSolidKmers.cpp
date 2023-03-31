@@ -45,14 +45,14 @@ int writeKmcKmersInRange(CKMCFile kmc_database, std::string kmc_output_path,
 
     int kcount = 0;
     std::string s;
-    s.reserve(25 * 1e5);
-
+    s.reserve(30 * 1e4);
+    
     while (kmc_database.ReadNextKmer(*kmer_object, counter)) {
         if(counter < upper && counter >= lower) {
             std::string kmer = kmer_object->to_string();
             kcount += 1;
             s.append(">\n" + kmer + "\n");
-            if (kcount >= 1e5) {
+            if (kcount >= 1e4) {
                 kcount = 0;
                 output << s;
                 s = "";
@@ -67,16 +67,20 @@ int writeKmcKmersInRange(CKMCFile kmc_database, std::string kmc_output_path,
 int main(int argc, char* argv[]) {
     if (argc < 4) {
         std::cout << "use: suk_kmer k lower upper [path]" << std::endl;
+        return 0;
     }
     CKMCFile kmc_database;
     std::string path = argc > 4 ? argv[4] : "./";
     std::string k = argv[1];
     std::string kmc_output_path = path + k + "mer/kmc_result.res";
+    // std::cout << kmc_output_path << std::endl;
     
     /* Take KMC kmers in range */
-    std::string output = path + "solid_" + k + "mers.fa";
+    std::string output = path + k + "mers_solid.fa";
     size_t lower = std::stoi(argv[2]);
     size_t upper = std::stoi(argv[3]);
+
+    std::cout << "writing solid " << k << "-mers to: " << output << std::endl;
     writeKmcKmersInRange(kmc_database, kmc_output_path, output, lower, upper);
     
     return 0;
