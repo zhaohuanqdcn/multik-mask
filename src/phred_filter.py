@@ -37,7 +37,7 @@ def filter_line(bps, qs, q0=13):
 
 
 def filter_file(thread_no, src, start, end, q0=13):
-    batch = 1e3
+    batch = 1e2
     res = []
     codec = os.path.splitext(src)[1]
     if codec == ".gz":
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     #   print(f"Argument {i}: {arg}")
     src = sys.argv[1]
     dst = sys.argv[2]
-    number = 24
+    number = 48
     size = os.path.getsize(src)
     size_per_thread = int(size/number)
     print(f"size of {src}: {size}")

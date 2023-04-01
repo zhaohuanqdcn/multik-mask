@@ -30,7 +30,7 @@ def to_int(kmer):
         res += encode[i]
     return res
 
-def from_int(kmer):
+def from_int(k, kmer):
     res = []
     while kmer > 0:
         res.append(decode[kmer & 3])
@@ -41,26 +41,23 @@ def from_int(kmer):
 
 def mask_line(bps):
     n = len(bps) - 1
-    if n < k:
-        return ""
     res = []
-    seq = 0
     next = 0
-    for bp in bps[:k]:
-        seq = seq << 2
-        seq += encode[bp]
-    for i in range(k, n):
-        seq = seq << 2
-        seq += encode[bps[i]]
-        seq = seq & ((1 << (2 * k)) - 1)
-        # print(from_int(seq))
-        if seq in kmers:
-            res.append(bps[next: i + 1])
-            next = i + 1
+    seq = [0 for k in K]
+    for i in range(n):
+        for j in range(len(K)):
+            k = K[j]
+            seq[j] = seq[j] << 2
+            seq[j] += encode[bps[i]]
+            seq[j] = seq[j] & ((1 << (2 * k)) - 1)
+            if i >= k - 1 and seq[j] in kmers:
+                res.append(bps[max(next, i - k + 1): i + 1])
+                next = i + 1
+                # print(from_int(k, seq[j]))
     return "".join(res)
 
 
-def mask_file(thread_no, src, start, end, q0=13):
+def mask_file(thread_no, src, start, end):
     batch = 1e3
     res = []
     fin = open(src, "rt")
@@ -76,7 +73,7 @@ def mask_file(thread_no, src, start, end, q0=13):
         # print(str(thread_no), fin.tell())
         bps = fin.readline()
         masked = mask_line(bps)
-        if len(masked) > k:
+        if len(masked) > 0:
             res.append(">\n")
             res.append(masked)
             res.append("\n")
@@ -90,43 +87,49 @@ def mask_file(thread_no, src, start, end, q0=13):
     queue.put(''.join(res))
     res = []
     return
+    
 
 lock = Lock()
 queue = Queue()
-k = 0
 kmers = set()
+K = list()
 
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        print("use: python mask.py k kmer_path filtered_path dest_path")
+    if len(sys.argv) < 5 or len(sys.argv) % 2 != 1:
+        print("use: python mask.py filter_path dest_path (k kmer_path)+")
     # for i, arg in enumerate(sys.argv):
     #   print(f"Argument {i}: {arg}")
-    k = eval(sys.argv[1])
-    print(f"reading in solid {k}-mers...")
-    with open(sys.argv[2], "rt") as file:
-        for kmer in file.read().splitlines()[1::2]:
-            kmers.add(to_int(kmer))
-            kmers.add(to_int(complement(kmer)))
-    print(f"total # of solid {k}-mers: {len(kmers) // 2}")
 
-    src = sys.argv[3]
-    dst = sys.argv[4]
-    number = 12
+    src = sys.argv[1]
+    dst = sys.argv[2]
+
+    for i in range(3, len(sys.argv), 2):
+        k = eval(sys.argv[i])
+        K.append(k)
+        kmer_path = sys.argv[i + 1]
+        print(f"reading in solid {k}-mers...")
+        count = 0
+        with open(kmer_path, "rt") as file:
+            for kmer in file.read().splitlines()[1::2]:
+                count += 1
+                kmers.add(to_int(kmer))
+                kmers.add(to_int(complement(kmer)))
+        print(f"total # of solid {k}-mers: {count}")
+    
+    number = 48
     size = os.path.getsize(src)
     size_per_thread = int(size/number)
     print(f"no. of threads: {number}")
     print(f"initing threads...")
+
     writer = Thread(target=file_writer, args=(dst, queue), daemon=True)
     writer.start()
-    
     threads = [Thread(
                     target=mask_file, \
                     args=(i, src, size_per_thread * i, size_per_thread * (i+1))) \
                 for i in range(number)]
     for thread in threads:
         thread.start()
-    print(f"threads running...")
-    
     for thread in threads:
         thread.join()
     queue.join()
