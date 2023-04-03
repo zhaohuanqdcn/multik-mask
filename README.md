@@ -32,12 +32,12 @@ The framework is updated from [SUK](https://github.com/Ritu-Kundu/suk).
   git clone --recursive https://github.com/GATB/gatb-minia-pipeline
   cd gatb-minia-pipeline; make test
 
-- (KMC and GATB-minia should be in the path (`$PATH`))
+- (KMC, GATB-minia and MultiKMasking should be in path (`$PATH`))
 
 ## Building
 CmakeLists is provided in the project root folder.
-### Building Library
-Run the following commands to build a library `suk.a` in `build/lib` :
+
+Run the following commands to install and build:
 ```console
   git clone --recursive https://github.com/zhaohuanqdcn/multik-mask
   cd multik-mask
@@ -56,16 +56,24 @@ Run the following commands to build a library `suk.a` in `build/lib` :
 To run the tool from `multik-mask/src` folder:
 
 ```
-placeholder
+multik_mask.py [-h] -k K+ -i INPUT_PATH -f OUTPUT_FOLDER [-o PREFIX_NAME] [--no-pipeline]
+
+optional arguments:
+  -h, --help        show this help message and exit
+  -k K [K ...]      A list of kmer sizes
+  -i INPUT_PATH     Input file of reads
+  -f OUTPUT_FOLDER  Output folder name
+  -o PREFIX_NAME    Prefix of output files (default: assembly)
+  --no-pipeline     Mask reads without assembling
 ```
 
-The usage of subroutines is not recommended since they are not intended to be standalone components. However, in case you want to do so:
+Subroutines are not recommended since they are not intended to be standalone components. However, in case you want to run a component separately:
 
  ```bash
   python phred_filter.py src_path dest_path
   bin/suk_cnt k [path (default ./)]
   bin/suk_kmer k lower upper [path (default ./)]
-  python mask.py k kmer_path filtered_path dest_path
+  python mask.py filter_path dest_path (k kmer_path)+
  ```
 **Notes:** 
 
@@ -74,11 +82,13 @@ The usage of subroutines is not recommended since they are not intended to be st
 
 ### Output Files
 
-placeholder
+All output files will reside in `<OUTPUT_FOLDER>`. Masked reads are stored in `/masked.fa` and the assembly is stored in `/<PREFIX_NAME>_final.contigs.fa` (if the pipeline is run). The KMC database of `k`mers can be found at `/<k>mer` and its frequency histogram will be stored in `/hist/<k>mer_kmc.hist.txt`.
 
 ### Example  
 
-placeholder
+`python multik_mask.py -k 13 17 21 -i F2426_reads.fq -f output -o f2426`
+
+The above command runs MultiKMasking with `k=[13,17,21]` on reads `F2426_reads.fq` stored in the same folder (`multik-mask/src`), and directs the output to folder `output`. The assembly will be available at `./output/f2426_final.contigs.fa`.
 
 ## External Libraries
 
